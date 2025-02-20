@@ -1,0 +1,22 @@
+{
+    "name": "backend-part1",
+    "version": "1.0.0",
+    "main": "./src/index.ts",
+    "license": "MIT",
+    "scripts": {
+        "dev-start": "nodemon --inspect .//dist//index.js",
+        "tsc-auto-compile": "tsc -w",
+        "build": "tsc",
+        "start": "node ./dist/index.js"
+    },
+    "dependencies": {
+        "express": "^4.21.2"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.0",
+        "@types/node": "^22.13.4",
+        "nodemon": "^3.1.9",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.7.3"
+    }
+}
