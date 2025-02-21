@@ -4,13 +4,19 @@
     "main": "./src/index.ts",
     "license": "MIT",
     "scripts": {
-        "dev-start": "nodemon --inspect .//dist//index.js",
         "tsc-auto-compile": "tsc -w",
+        "dev-start": "nodemon --inspect .//dist//index.js",
+        "test": "jest",
         "build": "tsc",
         "start": "node ./dist/index.js"
     },
     "dependencies": {
-        "express": "^4.21.2"
+        "@types/jest": "^29.5.14",
+        "@types/supertest": "^6.0.2",
+        "express": "^4.21.2",
+        "jest": "^29.7.0",
+        "supertest": "^7.0.0",
+        "ts-jest": "^29.2.5"
     },
     "devDependencies": {
         "@types/express": "^5.0.0",
