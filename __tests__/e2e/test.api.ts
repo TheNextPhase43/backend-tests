@@ -1,31 +1,53 @@
 import request from "supertest";
-import { app } from "../../src/index";
+import { app } from "../../src/app";
 import { HTTP_CODES } from "../../src/http-codes";
+import { CreateTitleModel } from "../../src/models/CreateTitleModel";
 
 describe("/title", () => {
-    // очистка бд
-    // хорошая ли практика?
+    // it("should return 200 code and empty array after deletion", async () => {
+    //     await request(app)
+    //         .delete("/__test__/titles")
+    //         .expect(200, []);
+    // });
+    // очистка бд (хорошая ли практика?)
+    // сам по себе запрос на очистку работает
+    // (выше есть запрос, и он работает)
+    // но вот перед каждым другим запросом
+    // функция ниже похоже не работает
+    // (по идее всё срабатывает нормально и
+    // DB хоть и импортится но всё равно
+    // очищается). Ошибка видимо в том,
+    // что из за двух роутеров и
+    // примитивной DB (реально не обновляющейся
+    // по факту) Функция не работает.
+    // при переносе ендпоинта очистики DB
+    // в роутер titles однако всё работает
+    // --------------------------------------
+    // проблему помогло решение перезаписывать
+    // массив не пустым массивом, а
+    // TitlesArray.length = 0;
+    // Почему? вроде одно и тоже...
     beforeAll(async () => {
-        await request(app).delete("/titles");
+        // запрос на роутер tests (не работает)
+        await request(app).delete("/__test__/titles").expect(200);
+        // запрос на роутер titles (работает)
+        // await request(app).delete("/titles").expect(200);
     });
 
-    let createdTitle1: any = null;
-    let createdTitle2: any = null;
-
-    it("should return 200 code and empty array", async () => {
+    it("should return 200 code and empty array second", async () => {
         await request(app).get("/titles").expect(200, []);
     });
 
     it("should return 201 code and created title", async () => {
         // новая запись в бд
-        createdTitle1 = "title999";
+        const createdTitle1: CreateTitleModel = { title: "title999" };
 
         // отправка записи на бэк,
         // проверка http-кода
         // postResponse - ответ
         const postResponse = await request(app)
             .post("/titles")
-            .send({ title: createdTitle1 })
+            .send(createdTitle1)
             .expect(HTTP_CODES.CREATED_201);
 
         // проверка совпадения ответа по
@@ -34,7 +56,7 @@ describe("/title", () => {
         // из бд
         expect(postResponse.body).toEqual({
             id: expect.any(Number),
-            title: createdTitle1,
+            title: createdTitle1.title,
         });
 
         // проверка гет-запросом
@@ -65,16 +87,29 @@ describe("/title", () => {
     // затем имея его данные полученные в ответ от бэка
     // ещё в post запросе, посылаем запрос get с URI
     // параметром ID
-    it("should return 201 code and object found by DB id", async () => {
-        createdTitle2 = "title1000";
+    it("should return 200 code and object found by DB id", async () => {
+        const createdTitle2: CreateTitleModel = {
+            title: "title1000",
+        };
 
         const postResponse = await request(app)
             .post("/titles")
-            .send({ title: createdTitle2 })
+            .send(createdTitle2)
             .expect(HTTP_CODES.CREATED_201);
 
         await request(app)
             .get(`/titles/${postResponse.body.id}`)
             .expect(HTTP_CODES.OK_200, postResponse.body);
+    });
+
+    it("should'nt create new title with incorrect data and return 400 code", async () => {
+        const createdTitle3: CreateTitleModel = {
+            title: "",
+        };
+
+        const postResponse = await request(app)
+            .post("/titles")
+            .send(createdTitle3)
+            .expect(HTTP_CODES.BAD_REQUEST_400);
     });
 });
