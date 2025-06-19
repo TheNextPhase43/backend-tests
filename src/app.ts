@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { getInterestingRouter, getTitlesRouter } from "./routes/titles";
-import { TitlesArray } from "./db/db";
+// import { TitlesArray } from "./db/db";
+import { TitlesArray } from "./repositories/titles-repository";
 import { getTestsRouter } from "./routes/tests";
 
 export const app = express();

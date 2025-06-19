@@ -28,13 +28,10 @@ describe("/title", () => {
     // TitlesArray.length = 0;
     // Почему? вроде одно и тоже...
     beforeAll(async () => {
-        // запрос на роутер tests (не работает)
         await request(app).delete("/__test__/titles").expect(200);
-        // запрос на роутер titles (работает)
-        // await request(app).delete("/titles").expect(200);
     });
 
-    it("should return 200 code and empty array second", async () => {
+    it("should return 200 code and empty array", async () => {
         await request(app).get("/titles").expect(200, []);
     });
 
@@ -111,5 +108,13 @@ describe("/title", () => {
             .post("/titles")
             .send(createdTitle3)
             .expect(HTTP_CODES.BAD_REQUEST_400);
+    });
+
+    // тест авторизации
+    it("should return 200 code (auth test)", async () => {
+        await request(app)
+            .get("/__test__/admin")
+            .set("Authorization", `admin:qwerty`)
+            .expect(200, []);
     });
 });
