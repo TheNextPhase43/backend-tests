@@ -1,3 +1,6 @@
+// репозиторий работает с памятью!
+// без mongodb и других бд
+
 export type Title = {
     id: number;
     title: string;
@@ -47,14 +50,15 @@ export const titlesRepository = {
         return foundTitles;
     },
 
-    findTitleById(id: number) {
+    // вернёт тайтл или андефайнед, потому что может и не найтись такой тайтл
+    async findTitleById(id: number): Promise<Title | undefined> {
         const foundTitle = TitlesArray.find((el) => {
             return el.id === id;
         });
         return foundTitle;
     },
 
-    createTitle(title: string) {
+    async createTitle(title: string): Promise<Title> {
         const newTitle: Title = {
             id: +new Date(),
             title: title,
@@ -65,18 +69,18 @@ export const titlesRepository = {
         return newTitle;
     },
 
-    updateTitle(id: number, newTitle: string) {
-        const foundTitle = TitlesArray.find((el) => el.id === id);
+    async updateTitle(id: number, newTitle: string): Promise<Title | null> {
+        const titleToUpdate = TitlesArray.find((el) => el.id === id);
 
-        if (!foundTitle) {
+        if (!titleToUpdate) {
             return null;
         } else {
-            foundTitle.title = newTitle;
-            return foundTitle;
+            titleToUpdate.title = newTitle;
+            return titleToUpdate;
         }
     },
 
-    deleteTitle(id: number) {
+    async deleteTitle(id: number): Promise<true | false> {
         TitlesArray.forEach((el, i) => {
             if (el.id === id) {
                 TitlesArray.splice(i, 1);

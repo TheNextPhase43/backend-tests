@@ -3,6 +3,8 @@ import { app } from "../../src/app";
 import { HTTP_CODES } from "../../src/http-codes";
 import { CreateTitleModel } from "../../src/models/CreateTitleModel";
 
+// тесты не переделаны под работу с mongodb
+// так что пока что работают через жопу
 describe("/title", () => {
     // it("should return 200 code and empty array after deletion", async () => {
     //     await request(app)
@@ -115,6 +117,6 @@ describe("/title", () => {
         await request(app)
             .get("/__test__/admin")
             .set("Authorization", `admin:qwerty`)
-            .expect(200, []);
+            .expect(200, { authHeader: "admin:qwerty" });
     });
 });

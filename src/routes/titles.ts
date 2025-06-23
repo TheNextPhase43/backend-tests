@@ -1,23 +1,24 @@
+import express from "express";
 import { Express, Request, Response } from "express";
 import {
     RequestWithBody,
     RequestWithParams,
     RequestWithQuery,
 } from "../expressRequestTypes";
+
+import { body, validationResult } from "express-validator";
+import { inputValidationMiddleWare } from "../middlewares/input-validation-middleware";
+
 import { QueryTitleModel } from "../models/QueryTitleModel";
 import { TitleViewModel } from "../models/TitleViewModel";
 import { URIParamsTitleIdModel } from "../models/URIParamsTitleIdModel";
 import { CreateTitleModel } from "../models/CreateTitleModel";
+import { UpdateTitleModel } from "../models/UpdateTitleModel";
+
 import { HTTP_CODES } from "../http-codes";
-import { UpdateTitleMode } from "../models/UpdateTitleMode";
-// import { Title } from "../db/db";
-import express from "express";
-import {
-    titlesRepository,
-    Title,
-} from "../repositories/titles-repository";
-import { body, validationResult } from "express-validator";
-import { inputValidationMiddleWare } from "../middlewares/input-validation-middleware";
+
+import { Title } from "../repositories/db";
+import { titlesRepository } from "../repositories/titles-repository-in-db";
 
 export function getViewTitleModel(Title: Title): TitleViewModel {
     return {
@@ -84,6 +85,8 @@ export function getTitlesRouter(TitlesArray: Title[]) {
                 res.sendStatus(404);
                 return;
             }
+            // для теста работает ли viewModel
+            // res.status(200).json(foundTitles);
             res.status(200).json(foundTitles.map(getViewTitleModel));
         }
     );
@@ -91,11 +94,11 @@ export function getTitlesRouter(TitlesArray: Title[]) {
     // get title by DB id
     router.get(
         "/:id",
-        (
+        async (
             req: RequestWithParams<URIParamsTitleIdModel>,
             res: Response<TitleViewModel>
         ) => {
-            const foundTitle = titlesRepository.findTitleById(
+            const foundTitle = await titlesRepository.findTitleById(
                 +req.params.id
             );
             if (!foundTitle) {
@@ -120,7 +123,7 @@ export function getTitlesRouter(TitlesArray: Title[]) {
         // также эта часть отправляет
         // в ответ список ошибок
         inputValidationMiddleWare,
-        (
+        async (
             req: RequestWithBody<CreateTitleModel>,
             res: Response<
                 | TitleViewModel
@@ -134,7 +137,7 @@ export function getTitlesRouter(TitlesArray: Title[]) {
             //     return;
             // }
 
-            const newTitle = titlesRepository.createTitle(
+            const newTitle = await titlesRepository.createTitle(
                 req.body.title
             );
 
@@ -148,8 +151,8 @@ export function getTitlesRouter(TitlesArray: Title[]) {
         "/:id",
         titleValidation,
         inputValidationMiddleWare,
-        (
-            req: Request<URIParamsTitleIdModel, {}, UpdateTitleMode>,
+        async (
+            req: Request<URIParamsTitleIdModel, {}, UpdateTitleModel>,
             res: Response<
                 | TitleViewModel
                 | {
@@ -162,7 +165,9 @@ export function getTitlesRouter(TitlesArray: Title[]) {
             //     res.sendStatus(HTTP_CODES.BAD_REQUEST_400);
             //     return;
             // }
-            const updatedTitle = titlesRepository.updateTitle(
+            // метод репозитория обновляющий title также возвращает
+            // сам обновлённый title
+            const updatedTitle = await titlesRepository.updateTitle(
                 +req.params.id,
                 req.body.title
             );
@@ -171,18 +176,20 @@ export function getTitlesRouter(TitlesArray: Title[]) {
                 return;
             }
 
-            res.status(HTTP_CODES.OK_200).json(updatedTitle);
+            res.status(HTTP_CODES.OK_200).json(
+                getViewTitleModel(updatedTitle)
+            );
         }
     );
 
     // delete by id
     router.delete(
         "/:id",
-        (
+        async (
             req: RequestWithParams<URIParamsTitleIdModel>,
             res: Response
         ) => {
-            const isDeleted = titlesRepository.deleteTitle(
+            const isDeleted = await titlesRepository.deleteTitle(
                 +req.params.id
             );
             if (isDeleted) {
