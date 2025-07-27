@@ -1,5 +1,5 @@
-import { MongoClient } from "mongodb";
-import { Collection } from "./../../node_modules/mongodb/src/collection";
+import { MongoClient, ObjectId } from "mongodb";
+import { settings } from "../settings";
 
 export type Title = {
     id: number;
@@ -7,13 +7,44 @@ export type Title = {
     length: number;
 };
 
-const mongoUri =
-    process.env.PORT ||
-    "mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2";
+export type UserDBType = {
+    _id: ObjectId;
+    userName: string;
+    email: string;
+    passwordHash: string;
+    // по идее хранить соль в бд не надо
+    // но пока тестим
+    passwordSalt: string;
+    createdAt: object;
+};
 
-const client = new MongoClient(mongoUri);
-const db = client.db("TitlesDataBase");
-export const mongoDbTitlesCollection = db.collection<Title>("titles");
+export type FeedbackDBType = {
+    feedbackText: string;
+    // внимание, это именно айдишник
+    // ПОЛЬЗОВАТЕЛЯ, который оставил
+    // фидбек
+    userId: ObjectId;
+    _id: ObjectId;
+};
+
+// работа с монгодб
+const client = new MongoClient(settings.MONGO_URI);
+
+// бд titles
+const titlesDb = client.db("TitlesDataBase");
+// коллекция titles в дб titles
+export const mongoDbTitlesCollection =
+    titlesDb.collection<Title>("titles");
+
+// бд users
+const usersDb = client.db("UsersDataBase");
+export const mongoDbUsersCollection =
+    usersDb.collection<UserDBType>("usersCollection");
+
+// бд feedBack
+const feedBackDb = client.db("FeedbackDataBase");
+export const mongoDbFeedbackCollection =
+    feedBackDb.collection<FeedbackDBType>("feedbackCollection");
 
 export async function runDb() {
     try {

@@ -33,41 +33,27 @@ export const titlesRepository = {
     async findTitleById(id: number): Promise<Title | null> {
         const foundTitle: Title | null =
             await mongoDbTitlesCollection.findOne({ id: id });
-        // условие не сработает, если
-        // foundTitle === null
-        if (foundTitle) {
-            return foundTitle;
-        } else {
-            return null;
-        }
+        return foundTitle;
     },
 
-    async createTitle(title: string): Promise<Title> {
-        const newTitle: Title = {
-            id: +new Date(),
-            title: title,
-            length: 30,
-        };
+    async createTitle(newTitle: Title): Promise<Title> {
         await mongoDbTitlesCollection.insertOne(newTitle);
-
         return newTitle;
     },
 
     async updateTitle(
         id: number,
         newTitle: string
-    ): Promise<Title | null> {
+    ): Promise<boolean> {
         const result = await mongoDbTitlesCollection.updateOne(
             { id: id },
             { $set: { title: newTitle } }
         );
 
         if (result.matchedCount === 1) {
-            const updatedTitle: Title | null =
-                await mongoDbTitlesCollection.findOne({ id: id });
-            return updatedTitle;
+            return true;
         } else {
-            return null;
+            return false;
         }
     },
 

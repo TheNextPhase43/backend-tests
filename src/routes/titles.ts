@@ -1,5 +1,5 @@
 import express from "express";
-import { Express, Request, Response } from "express";
+import { Request, Response } from "express";
 import {
     RequestWithBody,
     RequestWithParams,
@@ -18,8 +18,11 @@ import { UpdateTitleModel } from "../models/UpdateTitleModel";
 import { HTTP_CODES } from "../http-codes";
 
 import { Title } from "../repositories/db";
-import { titlesRepository } from "../repositories/titles-repository-in-db";
+import { titlesService } from "../domain/titles-service";
 
+// вот этого вот тут быть не должно вообще
+// это работа для query репозитория на
+// data access layer
 export function getViewTitleModel(Title: Title): TitleViewModel {
     return {
         id: Title.id,
@@ -52,8 +55,7 @@ export function getTitlesRouter(TitlesArray: Title[]) {
     // и после резолва промиса идти дальше. Но оно
     // всё равно виснет...
     router.get("/async", async (req: Request, res: Response) => {
-        const foundTitles: Title[] =
-            await titlesRepository.findTitles();
+        const foundTitles: Title[] = await titlesService.findTitles();
 
         // const start = performance.now();
         // console.log(start);
@@ -75,7 +77,7 @@ export function getTitlesRouter(TitlesArray: Title[]) {
             req: RequestWithQuery<QueryTitleModel>,
             res: Response<TitleViewModel[]>
         ) => {
-            const foundTitlesPromise = titlesRepository.findTitles(
+            const foundTitlesPromise = titlesService.findTitles(
                 req.query.title?.toString()
             );
 
@@ -98,7 +100,7 @@ export function getTitlesRouter(TitlesArray: Title[]) {
             req: RequestWithParams<URIParamsTitleIdModel>,
             res: Response<TitleViewModel>
         ) => {
-            const foundTitle = await titlesRepository.findTitleById(
+            const foundTitle = await titlesService.findTitleById(
                 +req.params.id
             );
             if (!foundTitle) {
@@ -137,7 +139,7 @@ export function getTitlesRouter(TitlesArray: Title[]) {
             //     return;
             // }
 
-            const newTitle = await titlesRepository.createTitle(
+            const newTitle = await titlesService.createTitle(
                 req.body.title
             );
 
@@ -160,25 +162,26 @@ export function getTitlesRouter(TitlesArray: Title[]) {
                   }
             >
         ) => {
-            // bad request
-            // if (!req.body.title) {
-            //     res.sendStatus(HTTP_CODES.BAD_REQUEST_400);
-            //     return;
-            // }
-            // метод репозитория обновляющий title также возвращает
-            // сам обновлённый title
-            const updatedTitle = await titlesRepository.updateTitle(
+            const updateResult = await titlesService.updateTitle(
                 +req.params.id,
                 req.body.title
             );
-            if (!updatedTitle) {
+            if (updateResult) {
+                const title = await titlesService.findTitleById(
+                    +req.params.id
+                );
+                res.status(HTTP_CODES.OK_200).json(
+                    // в данном конкретном случае этот
+                    // код не выполнится, если мы предварительно
+                    // не узнаем, есть ли такая запись в БД вообще
+                    // поэтому тут, гарантированно передаётся title,
+                    // но не null
+                    getViewTitleModel(title!)
+                );
+            } else {
                 res.sendStatus(HTTP_CODES.NOT_FOUND_404);
                 return;
             }
-
-            res.status(HTTP_CODES.OK_200).json(
-                getViewTitleModel(updatedTitle)
-            );
         }
     );
 
@@ -189,7 +192,7 @@ export function getTitlesRouter(TitlesArray: Title[]) {
             req: RequestWithParams<URIParamsTitleIdModel>,
             res: Response
         ) => {
-            const isDeleted = await titlesRepository.deleteTitle(
+            const isDeleted = await titlesService.deleteTitle(
                 +req.params.id
             );
             if (isDeleted) {
