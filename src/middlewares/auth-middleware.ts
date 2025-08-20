@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { userService } from "../domain/users-service";
 import { jwtService } from "../application/jwt-service";
 import { HTTP_CODES } from "../http-codes";
-import { UserDBType } from "../repositories/db";
+import { UserAccountInDBType } from "../repositories/db";
 import { ObjectId } from "mongodb";
+import { authService } from "../domain/auth-service";
 
 /**
  * Данный middleware проверяет
@@ -11,7 +11,7 @@ import { ObjectId } from "mongodb";
  */
 export const authMiddleware = async (
     request: Request & {
-        user?: UserDBType | null;
+        user?: UserAccountInDBType | null;
     },
     response: Response,
     next: NextFunction
@@ -32,7 +32,7 @@ export const authMiddleware = async (
     const userId = await jwtService.getUserIdByToken(token);
 
     if (userId) {
-        request.user = await userService.findUserById(userId);
+        request.user = await authService.findUserById(userId);
         next();
         // тут была проблема, которую я долго решал
         // return должен быть обязательно, чтобы

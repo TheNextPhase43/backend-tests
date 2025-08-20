@@ -1,4 +1,4 @@
-import { UserDBType } from "../repositories/db";
+import { UserAccountInDBType, UserDBType } from "../repositories/db";
 import { ObjectId } from "mongodb";
 import jwt from "jsonwebtoken";
 import { settings } from "../settings";
@@ -8,7 +8,7 @@ export const jwtService = {
      * Передаём юзера из дб
      * получаем jwt токен
      */
-    async createJWT(userToCreateToken: UserDBType) {
+    async createJWT(userToCreateToken: UserAccountInDBType) {
         const token = jwt.sign(
             // это потом станет тем, что возвращает
             // метод jwt.verify()

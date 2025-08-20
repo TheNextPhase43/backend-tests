@@ -18,6 +18,21 @@ export type UserDBType = {
     createdAt: object;
 };
 
+export type UserAccountInDBType = {
+    _id: ObjectId;
+    accountData: {
+        userName: string;
+        email: string;
+        passwordHash: string;
+        createdAt: object;
+    };
+    emailConfirmation: {
+        confirmation: string;
+        expirationDate: object;
+        isConfirmed: boolean;
+    };
+};
+
 export type FeedbackDBType = {
     feedbackText: string;
     // внимание, это именно айдишник
@@ -39,7 +54,7 @@ export const mongoDbTitlesCollection =
 // бд users
 const usersDb = client.db("UsersDataBase");
 export const mongoDbUsersCollection =
-    usersDb.collection<UserDBType>("usersCollection");
+    usersDb.collection<UserAccountInDBType>("usersCollection");
 
 // бд feedBack
 const feedBackDb = client.db("FeedbackDataBase");

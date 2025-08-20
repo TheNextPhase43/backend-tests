@@ -1,8 +1,12 @@
 import { ObjectId } from "mongodb";
-import { UserDBType, mongoDbUsersCollection } from "./db";
+import {
+    UserAccountInDBType,
+    UserDBType,
+    mongoDbUsersCollection,
+} from "./db";
 
 export const userRepository = {
-    async createUser(newUser: UserDBType) {
+    async createUser(newUser: UserAccountInDBType): Promise<UserAccountInDBType> {
         await mongoDbUsersCollection.insertOne(newUser);
         return newUser;
     },
@@ -13,8 +17,9 @@ export const userRepository = {
             // что у меня в монгодб поле называется userName,
             // а не login, как в коде
             $or: [
-                { userName: loginOrEmail },
-                { email: loginOrEmail },
+                // Доступ к вложенному полю через кавычки
+                { "accountData.userName": loginOrEmail },
+                { "accountData.email": loginOrEmail },
             ],
         });
         return foundUser;

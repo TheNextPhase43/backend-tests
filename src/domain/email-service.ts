@@ -1,4 +1,5 @@
 import { emailManager } from "../managers/email-manager";
+import { UserAccountInDBType } from "../repositories/db";
 
 // этот сервис чисто для примера
 // по идее для работы конкретно с почтой
@@ -14,7 +15,7 @@ import { emailManager } from "../managers/email-manager";
 // пока есть в теории, так как в этом проекте пока нет
 // подобного функционала
 export const emailService = {
-    async sendPasswordRecoveryMessage(user: object) {
+    async sendPasswordRecoveryMessage(user: UserAccountInDBType) {
         // save to repo
         // get user from repo
         await emailManager.sendPasswordRecoveryMessage(user);
